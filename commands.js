@@ -1,4 +1,6 @@
 var fs = require('fs');
+var http = require('http');
+var request = require('request');
 
 module.exports = {
   	pwd: function(){
@@ -142,6 +144,36 @@ module.exports = {
 
   		process.stdout.write(output.join("\n"));
   		process.stdout.write("\nprompt >");
-  	}
+  	},
 
+    // curl: function(array){
+    //   var url = array[0];
+      
+    //   var callback = function(response){
+    //     var rawHTML = "";
+
+    //     response.on("data", function(chunk){
+    //       rawHTML += chunk;
+    //     });
+
+    //     response.on("end", function(){
+    //       process.stdout.write(rawHTML);
+    //       process.stdout.write("\nprompt >");
+    //     });
+
+    //   }
+
+    //   http.request(url, callback).end();
+      
+    // }
+
+    curl: function(array){
+      var url = array[0];
+      request(url, function(error, response, body){
+        if(!error && response.statusCode == 200){
+          process.stdout.write(body);
+          process.stdout.write("\nprompt >");
+        }
+      });
+    }
   }
