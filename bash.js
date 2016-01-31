@@ -6,9 +6,9 @@ process.stdin.on('data', function(data) {
   var string = data.toString().trim(); // remove the newline
 
   
-  var array = string.split(' ');
-  var cmd = array.shift();
+  var argv = string.split(' ');
+  var cmd = argv.shift();
   
-  commands[cmd](array);
+  commands[cmd](argv);
 
 });

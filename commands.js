@@ -21,16 +21,16 @@ module.exports = {
   			process.stdout.write("prompt > ");
   		});
   	},
-  	echo: function(array) {
-  		var stringoutput = array.join(' ');
+  	echo: function(argv) {
+  		var stringoutput = argv.join(' ');
 
 
   		process.stdout.write(stringoutput + "\n");
   		process.stdout.write("prompt > ");
   	},
-  	cat: function(array) {
+  	cat: function(argv) {
   		var output = "";
-  		array.forEach(function(currentValue, idx, array) {
+  		argv.forEach(function(currentValue, idx, argv) {
   			output += fs.readFileSync(currentValue, 'utf-8') + "\n";
   		});
   		process.stdout.write(output);
@@ -38,12 +38,12 @@ module.exports = {
   		
   	},
 
-  	head: function(array) {
+  	head: function(argv) {
   		var string = "";
   		var lines = "";
   		var linesArr;
   		var fiveLines = "";
-  		array.forEach(function(currentValue, idx, array) {
+  		argv.forEach(function(currentValue, idx, argv) {
   			string += fs.readFileSync(currentValue, 'utf-8') + "\n";
   			linesArr = string.split("\n");
   			var limit = linesArr.length < 5 ? linesArr.length : 5;
@@ -56,26 +56,26 @@ module.exports = {
   		
   	},
 
-  	tail: function(array) {
+  	tail: function(argv) {
 
   		var fileOutput = "";
   		var follow = false;
 
   		function processFile(filename){
   			var fileString = fs.readFileSync(filename, 'utf-8') + "\n";
-  			var linesArray = fileString.split("\n");
-  			linesArray = linesArray.slice(linesArray.length - (5 + 1) );
-  			process.stdout.write(linesArray.join("\n"));
+  			var linesargv = fileString.split("\n");
+  			linesargv = linesargv.slice(linesargv.length - (5 + 1) );
+  			process.stdout.write(linesargv.join("\n"));
 
   			if (follow) process.stdout.write("prompt > ")
   		}
 
-  		if(array.indexOf('-f') === 0){
-  			array.shift();
+  		if(argv.indexOf('-f') === 0){
+  			argv.shift();
   			follow = true;
   		}
   		
-  		array.forEach(function(currentValue, idx, array) {
+  		argv.forEach(function(currentValue, idx, argv) {
   			if(follow){
   				//var options = {persistent:true, recursive: false};
   				console.log('fswatch', currentValue);
@@ -96,12 +96,12 @@ module.exports = {
   		if (!follow) process.stdout.write("prompt > ");	
   	},
 
-  	sort: function(array){
+  	sort: function(argv){
   		// open file
   		// sort by first letter in line
   		// output
 
-  		var filename = array[0],
+  		var filename = argv[0],
   			output;
 
   		// console.log('heres the file name', filename);
@@ -114,8 +114,8 @@ module.exports = {
   		process.stdout.write("\nprompt >");
   	},
 
-  	wc: function(array) {
-  		var filename = array[0],
+  	wc: function(argv) {
+  		var filename = argv[0],
   			output;
 
   		output = fs.readFileSync(filename,'utf-8');
@@ -125,8 +125,8 @@ module.exports = {
   		process.stdout.write("\nprompt >");
   	},
 
-  	uniq: function(array){
-  		var filename = array[0],
+  	uniq: function(argv){
+  		var filename = argv[0],
   			input,
   			output = [],
   			topLine = "";
@@ -146,8 +146,8 @@ module.exports = {
   		process.stdout.write("\nprompt >");
   	},
 
-    // curl: function(array){
-    //   var url = array[0];
+    // curl: function(argv){
+    //   var url = argv[0];
       
     //   var callback = function(response){
     //     var rawHTML = "";
@@ -167,8 +167,8 @@ module.exports = {
       
     // }
 
-    curl: function(array){
-      var url = array[0];
+    curl: function(argv){
+      var url = argv[0];
       request(url, function(error, response, body){
         if(!error && response.statusCode == 200){
           process.stdout.write(body);
