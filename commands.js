@@ -1,6 +1,7 @@
 var fs = require('fs');
 var http = require('http');
 var request = require('request');
+var chalk = require('chalk');
 
 module.exports = {
   	pwd: function(stdin, argv, done){
@@ -214,6 +215,29 @@ module.exports = {
         });
         done(output);
       });
+    },
+
+    //Implement REGEX search
+    grep: function(stdin, argv, done){
+      var query = argv[0];
+      var stream = stdin.split("\n");
+
+      var output = "";
+
+      for (var i = 0; i < stream.length; i++){
+        if(stream[i].match(query)){
+          var index = stream[i].indexOf(query);
+
+          var firstPart = stream[i].slice(0, index);
+          var highlighted = chalk.white(stream[i].slice(index, index + query.length));
+          var lastPart = stream[i].slice(index + query.length) + "\n";
+
+          output += firstPart + highlighted + lastPart;
+        }
+      }
+      
+      done(output);
+      
     }
 
   }
