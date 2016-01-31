@@ -3,42 +3,43 @@ var http = require('http');
 var request = require('request');
 
 module.exports = {
-  	pwd: function(){
-  		process.stdout.write(process.cwd());
-  		process.stdout.write('\nprompt > ');
+  	pwd: function(argv, done){
+  		done(process.cwd());
   	},
-  	date: function(){
+  	date: function(argv, done){
   		var d = new Date();
-  		process.stdout.write(d.toString());
-  		process.stdout.write('\nprompt > ');
+      done(d.toString());
   	},
-  	ls: function(){
+  	ls: function(argv, done){
+      var output = "";
   		fs.readdir('.', function(err, files){
   			if(err) throw err;
-  			files.forEach(function(file){
-  				process.stdout.write(file.toString() + "\n");
+  			files.forEach(function(file, idx, files){
+  				output += file.toString();
+          if(idx + 1 !== files.length){
+            output += "\n";
+          }
   			});
-  			process.stdout.write("prompt > ");
+  			done(output);
   		});
   	},
-  	echo: function(argv) {
+  	echo: function(argv, done) {
   		var stringoutput = argv.join(' ');
-
-
-  		process.stdout.write(stringoutput + "\n");
-  		process.stdout.write("prompt > ");
+      done(stringoutput);
   	},
-  	cat: function(argv) {
+  	cat: function(argv, done) {
   		var output = "";
   		argv.forEach(function(currentValue, idx, argv) {
-  			output += fs.readFileSync(currentValue, 'utf-8') + "\n";
+  			output += fs.readFileSync(currentValue, 'utf-8');
+        if(idx + 1 !== argv.length){
+          output += "\n";
+        }
   		});
-  		process.stdout.write(output);
-  		process.stdout.write("prompt > ");
+  		done(output);
   		
   	},
 
-  	head: function(argv) {
+  	head: function(argv, done) {
   		var string = "";
   		var lines = "";
   		var linesArr;
@@ -48,15 +49,16 @@ module.exports = {
   			linesArr = string.split("\n");
   			var limit = linesArr.length < 5 ? linesArr.length : 5;
   			for(var i = 0; i < limit; i++){
-  				 fiveLines += linesArr[i] + "\n";
+  				 fiveLines += linesArr[i];
+           if(i + 1 !== limit){
+            fiveLines += "\n";
+          }
   			}
   		});
-  		process.stdout.write(fiveLines);
-  		process.stdout.write("prompt > ");
-  		
+  		done(fiveLines);
   	},
 
-  	tail: function(argv) {
+  	tail: function(argv, done) {
 
   		var fileOutput = "";
   		var follow = false;
@@ -96,7 +98,7 @@ module.exports = {
   		if (!follow) process.stdout.write("prompt > ");	
   	},
 
-  	sort: function(argv){
+  	sort: function(argv, done){
   		// open file
   		// sort by first letter in line
   		// output
@@ -110,22 +112,20 @@ module.exports = {
   		output = newData.split('\n');
   		output = output.sort().join('\n');
 
-  		process.stdout.write(output);
-  		process.stdout.write("\nprompt >");
+  		done(output);
   	},
 
-  	wc: function(argv) {
+  	wc: function(argv, done) {
   		var filename = argv[0],
   			output;
 
   		output = fs.readFileSync(filename,'utf-8');
   		output = output.split('\n');
 
-  		process.stdout.write(output.length + "");
-  		process.stdout.write("\nprompt >");
+  		done(output.length + "");
   	},
 
-  	uniq: function(argv){
+  	uniq: function(argv, done){
   		var filename = argv[0],
   			input,
   			output = [],
@@ -142,8 +142,7 @@ module.exports = {
   		}
 
 
-  		process.stdout.write(output.join("\n"));
-  		process.stdout.write("\nprompt >");
+  		done(output.join("\n"));
   	},
 
     // curl: function(argv){
@@ -167,13 +166,33 @@ module.exports = {
       
     // }
 
-    curl: function(argv){
+    curl: function(argv, done){
       var url = argv[0];
       request(url, function(error, response, body){
         if(!error && response.statusCode == 200){
-          process.stdout.write(body);
-          process.stdout.write("\nprompt >");
+          done(body);
         }
       });
+    },
+
+    find: function(argv, done){
+      var path = argv[0];
+      var output = "";
+      fs.readdir(path, function(err, files){
+        if(err) throw err;
+        files.forEach(function(file, idx, files){
+          if(file.indexOf(".") !== -1 && file.indexOf(".") !== 0){
+            output += file.toString();
+            if(idx + 1 !== files.length){
+              output += "\n";
+            } 
+          }else{
+            module.exports.find(path + file.toString, done);
+          }
+          
+        });
+        done(output);
+      });
     }
+
   }

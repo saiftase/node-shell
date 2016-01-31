@@ -8,7 +8,12 @@ process.stdin.on('data', function(data) {
   
   var argv = string.split(' ');
   var cmd = argv.shift();
-  
-  commands[cmd](argv);
+
+  commands[cmd](argv, done);
 
 });
+
+var done = function(output){
+  process.stdout.write(output);
+  process.stdout.write("\nprompt > ");
+}
