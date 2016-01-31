@@ -3,14 +3,14 @@ var http = require('http');
 var request = require('request');
 
 module.exports = {
-  	pwd: function(argv, done){
+  	pwd: function(stdin, argv, done){
   		done(process.cwd());
   	},
-  	date: function(argv, done){
+  	date: function(stdin, argv, done){
   		var d = new Date();
       done(d.toString());
   	},
-  	ls: function(argv, done){
+  	ls: function(stdin, argv, done){
       var output = "";
   		fs.readdir('.', function(err, files){
   			if(err) throw err;
@@ -23,12 +23,21 @@ module.exports = {
   			done(output);
   		});
   	},
-  	echo: function(argv, done) {
+  	echo: function(stdin, argv, done) {
   		var stringoutput = argv.join(' ');
+      if(stdin){
+        stringoutput = stdin;
+      }
       done(stringoutput);
   	},
-  	cat: function(argv, done) {
+  	cat: function(stdin, argv, done) {
   		var output = "";
+
+      if(stdin){
+        argv = [];
+        argv.push(stdin);
+      }
+
   		argv.forEach(function(currentValue, idx, argv) {
   			output += fs.readFileSync(currentValue, 'utf-8');
         if(idx + 1 !== argv.length){
@@ -39,13 +48,22 @@ module.exports = {
   		
   	},
 
-  	head: function(argv, done) {
-  		var string = "";
+  	head: function(stdin, argv, done) {
+      var string = "";
   		var lines = "";
   		var linesArr;
   		var fiveLines = "";
+
+      //Not necessarily the best solution
+      //but least disruptive to existing algorithm
+      //Refactor method for stdin to eliminate file read loop
+      if(stdin){
+        argv = [];
+        argv.push(stdin);
+      }
+
   		argv.forEach(function(currentValue, idx, argv) {
-  			string += fs.readFileSync(currentValue, 'utf-8') + "\n";
+  			string += stdin || fs.readFileSync(currentValue, 'utf-8') + "\n";
   			linesArr = string.split("\n");
   			var limit = linesArr.length < 5 ? linesArr.length : 5;
   			for(var i = 0; i < limit; i++){
@@ -58,7 +76,8 @@ module.exports = {
   		done(fiveLines);
   	},
 
-  	tail: function(argv, done) {
+    //Need to implment piping / done.
+  	tail: function(stdin, argv, done) {
 
   		var fileOutput = "";
   		var follow = false;
@@ -69,14 +88,16 @@ module.exports = {
   			linesargv = linesargv.slice(linesargv.length - (5 + 1) );
   			process.stdout.write(linesargv.join("\n"));
 
-  			if (follow) process.stdout.write("prompt > ")
+  			if (follow) process.stdout.write("prompt > DOES THIS HIT ")
   		}
 
   		if(argv.indexOf('-f') === 0){
   			argv.shift();
   			follow = true;
   		}
-  		
+
+
+
   		argv.forEach(function(currentValue, idx, argv) {
   			if(follow){
   				//var options = {persistent:true, recursive: false};
@@ -98,7 +119,7 @@ module.exports = {
   		if (!follow) process.stdout.write("prompt > ");	
   	},
 
-  	sort: function(argv, done){
+  	sort: function(stdin, argv, done){
   		// open file
   		// sort by first letter in line
   		// output
@@ -107,7 +128,7 @@ module.exports = {
   			output;
 
   		// console.log('heres the file name', filename);
-  		var newData = fs.readFileSync(filename,'utf-8');
+  		var newData = stdin || fs.readFileSync(filename,'utf-8');
   		// console.log(newData);
   		output = newData.split('\n');
   		output = output.sort().join('\n');
@@ -115,23 +136,23 @@ module.exports = {
   		done(output);
   	},
 
-  	wc: function(argv, done) {
+  	wc: function(stdin, argv, done) {
   		var filename = argv[0],
   			output;
 
-  		output = fs.readFileSync(filename,'utf-8');
+  		output = stdin || fs.readFileSync(filename,'utf-8');
   		output = output.split('\n');
 
   		done(output.length + "");
   	},
 
-  	uniq: function(argv, done){
+  	uniq: function(stdin, argv, done){
   		var filename = argv[0],
   			input,
   			output = [],
   			topLine = "";
 
-  		input = fs.readFileSync(filename,'utf-8');
+  		input = stdin || fs.readFileSync(filename,'utf-8');
   		input = input.split('\n');
 
   		for(var i = 0; i < input.length; i++){
@@ -166,8 +187,8 @@ module.exports = {
       
     // }
 
-    curl: function(argv, done){
-      var url = argv[0];
+    curl: function(stdin, argv, done){
+      var url = stdin || argv[0];
       request(url, function(error, response, body){
         if(!error && response.statusCode == 200){
           done(body);
@@ -175,8 +196,8 @@ module.exports = {
       });
     },
 
-    find: function(argv, done){
-      var path = argv[0];
+    find: function(stdin, argv, done){
+      var path = stdin || argv[0];
       var output = "";
       fs.readdir(path, function(err, files){
         if(err) throw err;
